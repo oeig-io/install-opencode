@@ -97,7 +97,7 @@ in {
       NoNewPrivileges = true;
       PrivateTmp = true;
       ProtectSystem = "strict";
-      ProtectHome = false;
+      ProtectHome = "read-only";
       ReadWritePaths = [ 
         cfg.homeDir
         "/tmp"
