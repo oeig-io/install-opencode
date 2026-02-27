@@ -98,7 +98,10 @@ in {
       PrivateTmp = true;
       ProtectSystem = "strict";
       ProtectHome = false;
-      ReadWritePaths = [ cfg.homeDir ];
+      ReadWritePaths = [ 
+        cfg.homeDir
+        "/tmp"
+      ];
     };
   };
 
