@@ -97,7 +97,7 @@ in {
       NoNewPrivileges = true;
       PrivateTmp = true;
       ProtectSystem = "strict";
-      ProtectHome = true;
+      ProtectHome = false;
       ReadWritePaths = [ cfg.homeDir ];
     };
   };
