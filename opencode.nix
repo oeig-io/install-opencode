@@ -18,7 +18,7 @@
 { config, pkgs, lib, ... }:
 
 let
-  opencode = {
+  cfg = {
     user = "opencode";
     group = "opencode";
     port = 4096;
@@ -46,22 +46,22 @@ in {
   #############################################################################
   # OpenCode system user
   #############################################################################
-  users.users.${opencode.user} = {
+  users.users.${cfg.user} = {
     isSystemUser = true;
-    group = opencode.group;
-    home = opencode.homeDir;
+    group = cfg.group;
+    home = cfg.homeDir;
     createHome = true;
     shell = pkgs.bash;
     description = "OpenCode service user";
   };
 
-  users.groups.${opencode.group} = {};
+  users.groups.${cfg.group} = {};
 
   #############################################################################
   # OpenCode working directory
   #############################################################################
   systemd.tmpfiles.rules = [
-    "d ${opencode.homeDir}/.local/share/opencode 0755 ${opencode.user} ${opencode.group} -"
+    "d ${cfg.homeDir}/.local/share/opencode 0755 ${cfg.user} ${cfg.group} -"
   ];
 
   #############################################################################
@@ -76,19 +76,19 @@ in {
     
     serviceConfig = {
       Type = "simple";
-      User = opencode.user;
-      Group = opencode.group;
-      WorkingDirectory = opencode.homeDir;
+      User = cfg.user;
+      Group = cfg.group;
+      WorkingDirectory = cfg.homeDir;
       
-      ExecStart = "${pkgs.opencode}/bin/opencode web --port ${toString opencode.port} --hostname 0.0.0.0";
+      ExecStart = "${pkgs.opencode}/bin/opencode web --port ${toString cfg.port} --hostname 0.0.0.0";
       
       Restart = "always";
       RestartSec = 5;
       
       # Environment for opencode data
       Environment = [
-        "HOME=${opencode.homeDir}"
-        "XDG_DATA_HOME=${opencode.homeDir}/.local/share"
+        "HOME=${cfg.homeDir}"
+        "XDG_DATA_HOME=${cfg.homeDir}/.local/share"
       ];
       
       # Security hardening
@@ -96,7 +96,7 @@ in {
       PrivateTmp = true;
       ProtectSystem = "strict";
       ProtectHome = true;
-      ReadWritePaths = [ opencode.homeDir ];
+      ReadWritePaths = [ cfg.homeDir ];
     };
   };
 
