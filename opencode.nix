@@ -61,6 +61,8 @@ in {
   # OpenCode working directory
   #############################################################################
   systemd.tmpfiles.rules = [
+    "d ${cfg.homeDir}/.local 0755 ${cfg.user} ${cfg.group} -"
+    "d ${cfg.homeDir}/.local/share 0755 ${cfg.user} ${cfg.group} -"
     "d ${cfg.homeDir}/.local/share/opencode 0755 ${cfg.user} ${cfg.group} -"
   ];
 
