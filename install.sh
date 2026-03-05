@@ -31,7 +31,7 @@ if grep -q "opencode.nix" /etc/nixos/configuration.nix; then
 else
     sed -i 's|./incus.nix|./incus.nix\n    '"$SCRIPT_DIR"'/opencode.nix|' /etc/nixos/configuration.nix
 fi
-sudo nixos-rebuild switch
+sudo nixos-rebuild switch 2>&1 | tail -n 20
 
 echo ""
 echo "=== OpenCode Installation Complete ==="
