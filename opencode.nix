@@ -6,6 +6,12 @@
 #   - opencode system user
 #   - systemd service running 'opencode web'
 #
+# Architecture Note:
+#   'opencode web' serves BOTH the web UI and API on the same port:
+#     - Web UI: Browser interface at http://host:port/
+#     - API/WebSocket: For 'opencode attach' and terminal sessions
+#   Alternative: 'opencode serve' is API-only (no browser UI)
+#
 # Workflow:
 #   1. Add this to configuration.nix: imports = [ ./opencode.nix ];
 #   2. Run: sudo nixos-rebuild switch
@@ -69,10 +75,11 @@ in {
   #############################################################################
   # OpenCode systemd service
   # Runs 'opencode web' as the opencode user
+  # Serves BOTH web UI and API/WebSocket on the same port
   # Listens on 0.0.0.0:4096 for container proxy access
   #############################################################################
   systemd.services.opencode = {
-    description = "OpenCode Web Interface";
+    description = "OpenCode Web Interface and API";
     wantedBy = [ "multi-user.target" ];
     after = [ "network.target" ];
     
@@ -82,6 +89,8 @@ in {
       Group = cfg.group;
       WorkingDirectory = cfg.homeDir;
       
+      # 'opencode web' provides both UI and API on the same port
+      # Use 'opencode serve' instead for API-only mode
       ExecStart = "${pkgs.opencode}/bin/opencode web --port ${toString cfg.port} --hostname 0.0.0.0";
       
       Restart = "always";
@@ -91,6 +100,11 @@ in {
       Environment = [
         "HOME=${cfg.homeDir}"
         "XDG_DATA_HOME=${cfg.homeDir}/.local/share"
+        # Uncomment to enable basic auth:
+        # "OPENCODE_SERVER_PASSWORD=your-password-here"
+        # 
+        # Uncomment if opencode needs access to user-installed binaries:
+        # "PATH=/run/current-system/sw/bin:/run/wrappers/bin:/home/opencode/.local/bin"
       ];
       
       # Security hardening

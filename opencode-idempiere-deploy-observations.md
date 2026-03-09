@@ -252,6 +252,59 @@ This is a known issue with Bun on NixOS. Potential fixes:
 
 ---
 
+## Integration with iDempiere Containers
+
+**Concept**: `opencode.nix` can be dropped into any `install-idempiere` instance to serve opencode alongside iDempiere.
+
+### Why This Works
+
+1. **No user conflicts**: `opencode.nix` creates a dedicated `opencode` user, separate from the `idempiere` user
+2. **Port isolation**: Runs on port 4096, separate from iDempiere's Jetty on port 8443
+3. **Single command serves both apps**: `opencode web` provides both Web UI and API/WebSocket on the same port
+4. **Production-ready**: The service includes proper systemd configuration with restart logic
+
+### What Would Be Needed
+
+1. **Add opencode.nix to imports** in the container's `configuration.nix`:
+   ```nix
+   imports = [
+     ./idempiere-prerequisites.nix
+     ./idempiere-service.nix
+     ./idempiere-nginx.nix
+     ./opencode.nix  # Add this
+   ];
+   ```
+
+2. **Extend nginx configuration** in `idempiere-nginx.nix` with path-based routing for `/ai/`:
+   - Add location block for `/ai/` → `localhost:4096`
+   - Include WebSocket support (`proxyWebsockets = true`)
+   - Add `sub_filter` rules to rewrite absolute paths in HTML
+   - Proxy all API endpoints (`/assets/`, `/global`, `/session`, `/event`, `/pty`, etc.)
+
+3. **Run nixos-rebuild**:
+   ```bash
+   sudo nixos-rebuild switch
+   ```
+
+### Architecture
+
+```
+Client ──▶ Nginx (443) ──┬─▶ /webui/ ──▶ iDempiere (localhost:8443)
+                        │
+                        └─▶ /ai/ ─────▶ opencode (localhost:4096)
+                                        ├─▶ Web UI (browser)
+                                        └─▶ API/WebSocket (opencode attach)
+```
+
+### Key Configuration Requirements
+
+See section 1 (Nginx Configuration Requirements) above for the complete list of endpoints that must be proxied. The most critical are:
+- WebSocket support for `/pty/:id/connect` (terminal sessions)
+- `sub_filter` to rewrite `/assets/`, `/favicon`, and other absolute paths
+- All API endpoints: `/global`, `/session`, `/event`, `/config`, etc.
+
+---
+
 ## Commands for Testing
 
 ```bash
@@ -281,4 +334,5 @@ incus exec id-04 -- su - idempiere -c "SHELL=/tmp/bash-wrapper.sh opencode web -
 - Vilara opencode config: `~/code/vilara/project/nixos/opencode.nix`
 - Vilara opencode-idempiere config: `~/code/vilara/project/nixos/opencode-idempiere.nix`
 - Opencode source: `~/code/opencode/packages/opencode/src/`
+- **OpenCode systemd service (Tailscale access)**: https://gist.github.com/shawnyeager/752ce43e4f8d97f55cd9db397544873f - Community gist for running opencode as persistent systemd service with multiple client support
 - NixOS manual: https://nixos.org/manual/nixos/stable/
