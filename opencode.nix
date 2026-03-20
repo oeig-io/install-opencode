@@ -33,6 +33,12 @@ let
 
 in {
   #############################################################################
+  # Timezone Configuration - Default to America/Chicago
+  # Can be overridden by container-management/launch.sh when needed
+  #############################################################################
+  time.timeZone = "America/Chicago";
+
+  #############################################################################
   # Compatibility: Scripts may expect /bin/bash
   #############################################################################
   system.activationScripts.binbash = ''
