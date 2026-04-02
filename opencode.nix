@@ -46,6 +46,9 @@ in {
     ln -sf ${pkgs.bash}/bin/bash /bin/bash
   '';
 
+  # enable netbird - must bring up manually
+  services.netbird.enable = true;
+
   #############################################################################
   # System packages - Prerequisites
   #############################################################################
