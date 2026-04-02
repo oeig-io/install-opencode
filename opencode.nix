@@ -50,6 +50,14 @@ in {
   services.netbird.enable = true;
 
   #############################################################################
+  # IPv6 Configuration - Disable temporary addresses for stable addressing
+  #############################################################################
+  boot.kernel.sysctl = {
+    "net.ipv6.conf.all.use_tempaddr" = 0;
+    "net.ipv6.conf.default.use_tempaddr" = 0;
+  };
+
+  #############################################################################
   # System packages - Prerequisites
   #############################################################################
   environment.systemPackages = with pkgs; [
